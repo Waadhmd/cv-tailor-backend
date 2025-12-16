@@ -23,6 +23,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173/",
   "http://localhost:5173",
+  "https://cv-tailor-frontend.onrender.com/",
 ];
 const corsOptions = {
   origin: (origin, callback) => {
@@ -66,7 +67,7 @@ app.post("/api/tailor", async (req, res) => {
       tailoredCV_json_string = await generateTailorCV_OpenAI(
         cv_text,
         job_description
-      ); // FIX: Added await
+      );
     } else {
       return res
         .status(400)
@@ -187,19 +188,62 @@ async function generateTailorCV_OpenAI(cv_text, job_description) {
     //model: "gpt-3.5-turbo",  openaiClient.chat.completions.create
     model: "gpt-5-nano",
     input: `
-    You are an expert career consultant. Tailor the following CV to strictly match the provided job description.
-    Focus on rephrasing relevant bullet points and ensuring keywords are present, but **do not invent experience**
-    
+    You are an expert career consultant. Your task is to analyze the user's master CV and the job description (JD) and generate a **tailored CV in a strict JSON format**.
+
+    **CRITICAL INSTRUCTION:**
+    1. The output MUST be a single, valid JSON object, and NOTHING ELSE. Do not include any conversational text, notes, or markdown fences (like \`\`\`).
+    2. All descriptive fields (summary, experience descriptions, education descriptions) must be formatted using **Markdown** *within* the JSON string values.
+
+    ---
+    **JSON Schema to Follow:**
+    {
+      "personalInfo": {
+        "name": "Full Name",
+        "title": "Tailored Job Title",
+        "email": "email@example.com",
+        "phone": "+X (XXX) XXX-XXXX",
+        "linkedin": "linkedin.com/in/profile",
+        "location": "City, Country"
+      },
+      "summary": "A tailored professional summary (MUST be in Markdown format).",
+      "education": [
+        { 
+          "degree": "Degree/Program Name", 
+          "university": "Institution Name", 
+          "years": "Start - End", 
+          "description": "Relevant details as a bulleted list (MUST be in Markdown format)." 
+        }
+      ],
+      "experience": [
+        { 
+          "title": "Job Title", 
+          "company": "Company Name", 
+          "years": "Start - End", 
+          "description": "Tailored achievement bullet points (MUST be in Markdown format)." 
+        }
+      ],
+      "skills": { 
+         "Frontend": ["JavaScript (ES6+)", "React", "Next.js"],
+         "Backend": ["Node.js", "Python"],
+         "Tools & Dev Ops": ["Git", "Jira", "Postman"],
+         "Tools & Dev Ops": ["Git", "Jira", "Postman"],
+         "Soft Skills": ["Problem Solving", "Collaboration"]
+    },
+      "languages": ["Language 1", "Language 2"]
+    }
+    ---
+
     Job Description:
     ---
     ${job_description}
     ---
 
-    Original CV:
+    Original CV Content:
     ---
     ${cv_text}
     ---
-Output the tailored CV in a single, clean markdown block ready for display
+    
+    **Generate the JSON object now.**
     `,
     /*messages: [
       {
