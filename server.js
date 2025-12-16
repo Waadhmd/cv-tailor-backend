@@ -23,7 +23,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173/",
   "http://localhost:5173",
-  "https://cv-tailor-frontend.onrender.com/",
+  "https://cv-tailor-frontend.onrender.com",
 ];
 const corsOptions = {
   origin: (origin, callback) => {
